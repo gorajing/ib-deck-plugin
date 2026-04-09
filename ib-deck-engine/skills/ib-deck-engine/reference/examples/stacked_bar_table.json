@@ -1,0 +1,22 @@
+{
+  "_comment": "Example JSON spec for render_stacked_bar_table — Moelis-style revenue by segment with a data table underneath the chart. Uses Addus HomeCare segment data as a worked example.",
+  "slide_number": 7,
+  "title": "Personal Care Dominates Revenue Mix With Accelerating Growth Across All Three Segments",
+  "header_text": "Net Service Revenue by Segment ($ in thousands)",
+  "source": "Source: SEC EDGAR 10-K filings. Segment data from MD&A.",
+  "data": {
+    "periods": ["FY2022A", "FY2023A", "FY2024A", "FY2025A"],
+    "segments": [
+      {"name": "Personal Care", "color": "#1B365D", "values": [706507, 794718, 856581, 1089215]},
+      {"name": "Hospice", "color": "#4B7BA8", "values": [201772, 207155, 228191, 262542]},
+      {"name": "Home Health", "color": "#8EB4D6", "values": [42841, 56778, 69827, 70773]}
+    ],
+    "totals": [951120, 1058651, 1154599, 1422530],
+    "table_rows": [
+      {"label": "Personal Care", "values": ["$706,507", "$794,718", "$856,581", "$1,089,215"], "color": "#1B365D"},
+      {"label": "Hospice", "values": ["$201,772", "$207,155", "$228,191", "$262,542"], "color": "#4B7BA8"},
+      {"label": "Home Health", "values": ["$42,841", "$56,778", "$69,827", "$70,773"], "color": "#8EB4D6"},
+      {"label": "Total", "values": ["$951,120", "$1,058,651", "$1,154,599", "$1,422,530"], "bold": true}
+    ]
+  }
+}

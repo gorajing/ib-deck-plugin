@@ -2,7 +2,11 @@
 """
 Demo: Build a complete 14-slide investment banking deck for Addus HomeCare Corp (ADUS).
 
-This demonstrates every template in the IB Deck Engine library:
+Uses the 12 template types in the IB Deck Engine library (render_section_divider
+is reused 3 times to break the deck into Financial / Valuation / LBO sections,
+for a total of 14 slides from 12 distinct template functions).
+
+Templates exercised:
   1. Cover
   2. Table of Contents
   3. Executive Summary

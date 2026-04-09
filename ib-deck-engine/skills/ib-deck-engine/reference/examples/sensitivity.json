@@ -1,0 +1,23 @@
+{
+  "_comment": "Example JSON spec for render_sensitivity — WACC x Terminal Growth Rate grid with base case highlighted. Base case is at row 3 (9.9% WACC) and col 2 (3.0% TGR).",
+  "slide_number": 11,
+  "title": "DCF Sensitivity Analysis Across WACC and Terminal Growth Rate Assumptions",
+  "table_label": "Implied Share Price ($)",
+  "row_axis_label": "WACC →",
+  "col_axis_label": "Terminal Growth Rate →",
+  "data": {
+    "row_headers": ["8.5%", "9.0%", "9.5%", "9.9%", "10.5%", "11.0%"],
+    "col_headers": ["2.0%", "2.5%", "3.0%", "3.5%", "4.0%"],
+    "values": [
+      ["$147", "$159", "$174", "$194", "$220"],
+      ["$136", "$146", "$158", "$174", "$194"],
+      ["$126", "$135", "$145", "$157", "$173"],
+      ["$119", "$127", "$129", "$145", "$158"],
+      ["$111", "$118", "$125", "$134", "$145"],
+      ["$104", "$110", "$117", "$125", "$134"]
+    ],
+    "base_row": 3,
+    "base_col": 2
+  },
+  "source": "Source: DCF model. Base case assumes 9.9% WACC, 3.0% terminal growth."
+}

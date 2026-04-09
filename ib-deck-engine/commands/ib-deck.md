@@ -1,35 +1,45 @@
 ---
-description: Build a complete investment banking pitch deck for a public company
+description: Build a complete IB pitch deck using the 12-template library
 argument-hint: "[company ticker or name]"
 ---
 
-# IB Deck — Full Pitch Book
+# IB Deck — Full Pitch Book Workflow
 
-Build a complete 14-slide IB pitch deck for the specified company using the IB Deck Engine
-template library. The architecture: extract data → fill JSON specs → deterministic rendering.
+Orchestrates a complete IB pitch deck using the 12 templates in the IB Deck Engine
+library. The typical deck is ~14 slides (12 distinct template types plus three reused
+section dividers between the Financial, Valuation, and LBO sections).
+
+This command is a **workflow guide**, not an automated pipeline. It walks Claude
+through the steps to pick templates, fill JSON specs, and call the renderer. The
+user supplies (or Claude helps assemble) the underlying financial data — this
+version does not include an autonomous SEC EDGAR extractor.
 
 ## Workflow
 
-Load the `ib-deck-engine` skill to access the template library and follow this workflow:
+Load the `ib-deck-engine` skill to access the template library.
 
 ### Step 1: Confirm the deal
 
 If a company name/ticker is provided as $1, use it. Otherwise ask:
 - "What company would you like to build a pitch deck for?"
 - "Sell-side or buy-side mandate?"
-- "Any specific assumptions to use (or should I use reasonable defaults)?"
+- "Do you already have the financials, or should we work through them together?"
 
-### Step 2: Extract financial data
+### Step 2: Assemble the master JSON
 
-For public US companies, use `edgartools` to pull the most recent 10-K:
-- Revenue, COGS, gross profit, operating income, EBITDA, net income (3 years)
-- Balance sheet (cash, AR, debt, equity)
-- Cash flow statement (CFO, CapEx, financing)
-- Segment revenue if available
-- Diluted share count
-- Save as `{ticker}_master.json` — single source of truth
+Get the underlying financial data into the master JSON schema documented in
+`skills/ib-deck-engine/reference/template-catalog.md`. Options:
 
-### Step 3: Build the 14-slide deck
+- User supplies existing JSON / CSV / financials
+- Manual entry during the conversation
+- One-off extraction script using `edgartools` (not bundled with this plugin in
+  v0.1.0 — see the companion repo at github.com/gorajing/ib-deck-engine for a
+  reference extraction)
+
+The JSON should include: 3 years of historical IS/BS/CF, segment revenue if
+available, debt detail, and diluted share count.
+
+### Step 3: Build the deck
 
 Use the IBRenderer templates in this order:
 
@@ -50,8 +60,8 @@ Use the IBRenderer templates in this order:
 
 ### Step 4: Verify and deliver
 
-- Confirm 14 slides generated
-- Verify source text on each content slide
+- Confirm slide count
+- Spot-check source text on each content slide
 - Save as `{ticker}_pitch_deck.pptx`
 - Report the file path to the user
 
@@ -59,8 +69,8 @@ Use the IBRenderer templates in this order:
 
 - **Action titles only** — never "Financial Summary," always "Consistent Revenue Growth With Expanding Margins"
 - **Every number sourced** — trace each value to a source file or note "Estimated"
-- **Cross-model consistency** — DCF and LBO must use the same revenue, EBITDA, share count
-- **Right-alignment automatic** — handled by templates, don't override
+- **Cross-model consistency** — DCF and LBO should use the same revenue, EBITDA, share count. Document any intentional differences (e.g., LBO using statutory vs effective tax rate).
+- **Right-alignment is handled by the templates** — don't override it in the JSON spec
 
 ## Example: ADUS
 
@@ -68,5 +78,6 @@ Use the IBRenderer templates in this order:
 /ib-deck ADUS
 ```
 
-Builds a complete 14-slide pitch book for Addus HomeCare Corp using SEC EDGAR data.
-See `skills/ib-deck-engine/reference/examples/full_deck.py` for the full worked example.
+Walks through building a pitch book for Addus HomeCare Corp. A complete worked
+example (including the ADUS master JSON and the generated PPTX) lives at the
+companion repo: github.com/gorajing/ib-deck-engine.

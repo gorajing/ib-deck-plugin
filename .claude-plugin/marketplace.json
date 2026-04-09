@@ -7,7 +7,7 @@
     {
       "name": "ib-deck-engine",
       "source": "./ib-deck-engine",
-      "description": "14-template investment banking slide library with JSON spec → deterministic pixel rendering. Solves cross-model desync, openpyxl corruption, and spatial execution failures. Includes /ib-deck, /ib-extract, /ib-financial, /ib-football, /ib-comps, /ib-sources-uses, /ib-sensitivity slash commands."
+      "description": "12-template investment banking slide library with a renderer-first architecture. LLM fills structured JSON specs; a deterministic Python renderer handles layout. Includes /ib-deck, /ib-extract, /ib-financial, /ib-football, /ib-comps, /ib-sources-uses, and /ib-sensitivity workflow commands."
     }
   ]
 }

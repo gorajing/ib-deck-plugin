@@ -1,0 +1,26 @@
+{
+  "_comment": "Example JSON spec for render_dual_chart — two bar charts side by side with CAGR labels on the top-right of each. Uses Addus HomeCare historical revenue and EBITDA.",
+  "slide_number": 8,
+  "title": "Consistent Revenue Growth Accompanied by Meaningful EBITDA Margin Expansion",
+  "source": "Source: SEC EDGAR XBRL data.",
+  "charts": [
+    {
+      "subtitle": "Revenue ($M)",
+      "periods": ["2022A", "2023A", "2024A", "2025A"],
+      "values": [951120, 1058651, 1154599, 1422530],
+      "color": "#1B365D",
+      "cagr": "14.4%",
+      "secondary_label": "YoY Growth",
+      "secondary_values": ["—", "+11.3%", "+9.1%", "+23.2%"]
+    },
+    {
+      "subtitle": "EBITDA ($M) & Margin",
+      "periods": ["2022A", "2023A", "2024A", "2025A"],
+      "values": [82797, 105082, 116221, 155027],
+      "color": "#4B7BA8",
+      "cagr": "23.3%",
+      "secondary_label": "EBITDA Margin",
+      "secondary_values": ["8.7%", "9.9%", "10.1%", "10.9%"]
+    }
+  ]
+}

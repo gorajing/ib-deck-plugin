@@ -1,0 +1,19 @@
+{
+  "_comment": "Example JSON spec for render_trading_comps — peer multiples table with target company highlighted in yellow and Mean/Median summary rows in gray. Numbers are illustrative.",
+  "slide_number": 12,
+  "title": "Addus Trades at a Discount to Home Care Services Peers Despite Superior Growth and Margins",
+  "header_text": "Selected Home Care Services Trading Comparables",
+  "headers": ["Company", "Ticker", "Market Cap ($M)", "EV ($M)", "'26E Rev ($M)", "'26E EBITDA ($M)", "EV/Rev", "EV/EBITDA", "Rev Growth"],
+  "rows": [
+    {"company": "Addus HomeCare", "values": ["ADUS", "1,781", "1,820", "1,565", "175", "1.2x", "10.4x", "10.0%"]},
+    {"company": "BrightSpring Health", "values": ["BTSG", "5,820", "8,400", "11,200", "530", "0.8x", "15.8x", "12.5%"]},
+    {"company": "Pennant Group", "values": ["PNTG", "3,940", "4,200", "765", "82", "5.5x", "51.2x", "18.2%"]},
+    {"company": "Enhabit Home Health", "values": ["EHAB", "680", "1,100", "1,065", "115", "1.0x", "9.6x", "3.5%"]},
+    {"company": "Aveanna Healthcare", "values": ["AVAH", "2,150", "3,450", "2,085", "195", "1.7x", "17.7x", "6.8%"]},
+    {"company": "Modivcare", "values": ["MODV", "310", "965", "2,720", "155", "0.4x", "6.2x", "2.1%"]},
+    {"company": "Mean", "values": ["", "", "", "", "", "1.8x", "18.5x", "8.9%"], "summary": true},
+    {"company": "Median", "values": ["", "", "", "", "", "1.1x", "12.7x", "8.4%"], "summary": true}
+  ],
+  "target_row": 0,
+  "source": "Source: FactSet, Capital IQ. Market data illustrative."
+}

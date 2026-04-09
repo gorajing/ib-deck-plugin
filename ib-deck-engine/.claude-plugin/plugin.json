@@ -1,7 +1,7 @@
 {
   "name": "ib-deck-engine",
   "version": "0.1.0",
-  "description": "Investment banking slide template library with JSON spec → deterministic pixel rendering. Solves cross-model desync, openpyxl corruption, and spatial execution failures by separating content reasoning from layout execution.",
+  "description": "Investment banking slide template library with a renderer-first architecture. LLM fills structured JSON specs; a deterministic Python renderer handles layout. 12 templates covering the common IB slide patterns.",
   "author": {
     "name": "gorajing"
   }

@@ -86,23 +86,24 @@ See `reference/template-catalog.md` for full schema details and `reference/examp
 
 If the user says "build an IB deck for ADUS", confirm:
 - Single company sell-side pitch? Buy-side analysis? Fairness opinion?
-- How many slides? (Full 14-slide pitch book? Or specific slides?)
+- How many slides? (Full pitch book — ~14 slides using the 12 template types with section dividers reused — or specific slides?)
 - Any specific data sources to use?
 
-### Step 2: Extract data (if needed)
+### Step 2: Get the data into the master JSON schema
 
-For public companies, use the `edgartools` library or the bundled extraction script
-to pull 10-K data into a structured JSON master file. This becomes the single source
-of truth for all downstream slides.
+The plugin does not automate SEC EDGAR extraction in this version. You have three
+options for getting data into the master JSON schema:
 
-```python
-# Pseudocode
-from edgar import Company
-c = Company("TICKER")
-filing = c.get_filings(form="10-K").latest(1)
-# Extract IS, BS, CF, segments, debt detail, share count
-# Save as ticker_master.json
-```
+1. **Ask the user** to paste financials or supply a CSV / existing JSON
+2. **Write a short extraction script** using `edgartools` as a one-off (install
+   separately: `pip install edgartools[ai]`)
+3. **Use the companion case study** at github.com/gorajing/ib-deck-engine which
+   has a worked ADUS extraction as a reference
+
+The target JSON schema is documented in `reference/template-catalog.md`. Whatever
+path you take, the output of this step should be a single JSON file that every
+subsequent template call reads from — the "single source of truth" pattern prevents
+cross-model desync.
 
 ### Step 3: Pick templates and fill specs
 
@@ -166,7 +167,7 @@ differences explicitly:
 
 ## Common patterns
 
-### Pattern 1: Full pitch book (14 slides)
+### Pattern 1: Full pitch book (~14 slides using 12 template types + reused section dividers)
 ```python
 r.render_cover({...})
 r.render_toc({...})
@@ -185,7 +186,8 @@ r.render_sources_uses({...})
 r.save("project_alpine.pptx")
 ```
 
-See `reference/examples/full_deck.py` for a complete worked example.
+See `reference/examples/full_deck.py` for a complete worked example that uses every
+template and reuses `render_section_divider` for the three part breaks.
 
 ### Pattern 2: Single slide quick build
 For users who want one slide, ask which template fits and just call that one method.
@@ -212,22 +214,26 @@ the table or use a shorter chart.
 collision detection. If two reference labels would overlap horizontally, the second
 one bumps to a second row automatically.
 
-**"openpyxl recovery dialog"** — Don't use openpyxl for new file generation. The
-bundled scripts use xlsxwriter, which produces clean files. Only use openpyxl for
-reading existing files.
+**"openpyxl recovery dialog (when generating Excel separately)"** — If you're writing
+your own Excel file alongside the slides, use `xlsxwriter` for new file creation.
+openpyxl is only for reading/editing existing files. The `.pptx` rendering in this
+plugin uses `python-pptx`, not openpyxl, and is not affected by this issue.
 
 ## Examples
 
-See `reference/examples/` for working JSON specs:
+See `reference/examples/` for working JSON specs you can copy as starting points:
 - `financial_summary.json` — historical P&L table
 - `football_field.json` — valuation summary with reference lines
-- `stacked_bar_table.json` — Moelis revenue by segment
+- `stacked_bar_table.json` — stacked bars + data table (revenue by segment)
 - `sources_uses.json` — LBO capital structure
 - `trading_comps.json` — peer multiples table
-- `full_deck.py` — complete 14-slide ADUS deck
+- `dual_chart.json` — side-by-side bar charts with CAGR labels
+- `sensitivity.json` — WACC × TGR grid
+- `full_deck.py` — complete worked deck using every template
 
 ## Reference docs
 
 - `reference/template-catalog.md` — All 12 templates with full JSON schemas
-- `reference/style-guide.md` — Color palette, typography, IB formatting standards
-- `reference/architecture.md` — Why this works (Cognitive Logic API pattern)
+- `reference/style-guide.md` — Color palette, typography, formatting conventions
+- `reference/architecture.md` — Why the renderer-first architecture produces more
+  repeatable output than prompt-guided spatial code

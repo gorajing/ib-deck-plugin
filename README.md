@@ -1,8 +1,16 @@
 # IB Deck Engine — Claude Code Plugin
 
-> A Claude Code plugin that ships a 14-template investment banking slide library with a JSON spec → deterministic pixel rendering architecture.
+[![Tests](https://github.com/gorajing/ib-deck-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/gorajing/ib-deck-plugin/actions/workflows/tests.yml)
 
-**Why this exists:** Other AI slide tools ask the LLM to write spatial code (`Inches(2.5), Pt(11)`). That's why their output has misaligned tables, disproportional bar charts, and reference label collisions. This plugin separates content reasoning (LLM's strength) from spatial rendering (deterministic code's strength). Right-alignment is guaranteed by the template, not hoped for.
+> A Claude Code plugin with a 12-template investment banking slide library built on a renderer-first architecture: the LLM fills structured JSON specs and a deterministic Python renderer handles every pixel.
+
+**The core idea:** separate content reasoning (LLM's strength) from spatial rendering (deterministic code's strength). The LLM never writes `Inches()`, `Pt()`, or EMU values. It picks a template and passes data. The renderer guarantees right-alignment, proportional chart bars, and collision-free label placement by construction.
+
+This plugin is an alternative architecture worth considering alongside [`anthropics/financial-services-plugins`](https://github.com/anthropics/financial-services-plugins). Different tradeoffs, smaller scope, tighter guarantees on the things it does cover.
+
+## Status
+
+**Version 0.1.0 — early prototype.** What's shipped today is the 12-template rendering library and slash-command workflows that guide Claude through filling the JSON specs. It's installable and runnable. Extraction, full model building, and cross-model auditing are workflow guides (not automated pipelines) in this version — see [Roadmap](#roadmap) for what's coming.
 
 ## Installation
 
@@ -25,10 +33,12 @@ claude plugin list | grep ib-deck
 
 ## Available commands
 
+Each command loads the `ib-deck-engine` skill, which walks Claude through picking the right template, filling a JSON spec from your data, and calling the renderer. The commands are workflow guides — not autonomous pipelines.
+
 | Command | Purpose |
 |---------|---------|
-| `/ib-deck [TICKER]` | Build a complete 14-slide IB pitch deck for a public company |
-| `/ib-extract [TICKER]` | Pull a 10-K from SEC EDGAR into a structured JSON master file |
+| `/ib-deck [TICKER]` | Walk through building a complete IB pitch deck (orchestrates multiple templates) |
+| `/ib-extract [TICKER]` | Guided workflow: extract 10-K data into the master JSON schema the templates expect |
 | `/ib-financial [COMPANY]` | Build a single financial summary table slide |
 | `/ib-football [COMPANY]` | Build a football field valuation summary slide |
 | `/ib-comps [TARGET]` | Build a trading comparables peer multiples table |
@@ -37,72 +47,32 @@ claude plugin list | grep ib-deck
 
 ## Quick start
 
-```bash
-# In Claude Code, after installing the plugin:
-/ib-deck ADUS
+After installing the plugin and restarting Claude Code:
+
+```
+/ib-financial ADUS
 ```
 
-Claude will:
-1. Pull Addus HomeCare's most recent 10-K from SEC EDGAR via `edgartools`
-2. Extract financials into a structured JSON master file
-3. Fill JSON specs for 14 slide templates
-4. Render a pixel-perfect PPTX using the IBRenderer
-5. Save to `ADUS_pitch_deck.pptx`
+Claude will load the skill, ask for the historical financials (or pull them from a JSON you provide), fill out the `render_financial_summary` JSON spec, and call the renderer. The output is a single PPTX slide with right-aligned numerics, bold subtotals, italic gray % rows, and a navy section header — rendered by deterministic Python code, not by the model guessing coordinates.
 
-The entire pipeline takes one prompt.
-
-## What this plugin solves that the existing financial-services-plugins doesn't
-
-I built this after analyzing the source code of `anthropics/financial-services-plugins`. Here are the specific gaps it fills:
-
-### 1. Cross-model desync ✗ → ✓
-The existing plugins build DCF and LBO independently. There's nothing guaranteeing both use the same revenue, EBITDA, share count, or tax rate. In a Medpace case study, the DCF used 15% effective tax and the LBO used 21% statutory with no documentation.
-
-**This plugin's fix:** `/ib-extract` produces a single master JSON. Every downstream model and slide references it. A `cross_audit` function verifies consistency across DCF, LBO, and slides.
-
-### 2. openpyxl corruption ✗ → ✓
-The existing DCF skill (line 21) defaults to openpyxl for standalone xlsx generation. This produces files that trigger Excel's "We found a problem" recovery dialog.
-
-**This plugin's fix:** Uses `xlsxwriter` by default for new file creation. openpyxl is only for reading existing files.
-
-### 3. Spatial execution ceiling ✗ → ✓
-The existing skills tell the LLM to write `python-pptx` code directly. The LLM has to remember `Inches(2.5), Pt(11)` for every cell. Failures: right-alignment inconsistent, bar heights not proportional, reference labels overlapping titles.
-
-**This plugin's fix:** The LLM never writes spatial code. It picks a template (`render_financial_summary`) and fills a JSON spec. The IBRenderer guarantees:
-- Right-alignment on all numeric columns
-- Proportional bar heights (`value / max_value × chart_height`)
-- Tables are real PowerPoint table objects (not text with tabs)
-- Reference labels never overlap (collision detection built-in)
-- Source text dynamically positioned below content
-
-### 4. Generic titles ✗ → ✓
-The existing plugins don't enforce action titles. You get "Financial Summary" instead of "Consistent Revenue Growth With Expanding EBITDA Margin Expansion".
-
-**This plugin's fix:** SKILL.md explicitly requires action titles on every slide and gives examples.
-
-### 5. No template library ✗ → ✓
-The existing plugins make Claude generate slides from scratch each time. No reusable patterns.
-
-**This plugin's fix:** 14 pre-built templates for the most common IB slide types, each with a documented JSON schema.
-
-## The 14 templates
+## The 12 templates
 
 | # | Template | Pattern | Reference |
 |---|----------|---------|-----------|
-| 1 | `render_cover` | Cover with confidential mark + bank badge | GS board pres format |
-| 2 | `render_section_divider` | Full navy bg with section title | GS / Moelis style |
+| 1 | `render_cover` | Cover with confidential mark + bank badge | GS board presentation format |
+| 2 | `render_section_divider` | Full navy background with section title | GS / Moelis style |
 | 3 | `render_toc` | Numbered agenda with light blue bands | GS agenda slides |
 | 4 | `render_exec_summary` | Blue callout + ■ / — bullet hierarchy | GS executive summary |
-| 5 | `render_investment_highlights` | 4-card 2×2 grid with numbered headers | GS / GS analyst format |
+| 5 | `render_investment_highlights` | 4-card 2×2 grid with numbered headers | GS highlights format |
 | 6 | `render_financial_summary` | Historical P&L with bold subtotals | Standard IB financials |
 | 7 | `render_stacked_bar_table` | Stacked bars + data table below | Moelis revenue by segment |
 | 8 | `render_dual_chart` | Two bar charts side by side with CAGR | GS dual analysis |
-| 9 | `render_football_field` | Valuation methodologies with range bars | Evercore / Moelis |
+| 9 | `render_football_field` | Valuation methodologies with range bars | Evercore / Moelis valuation |
 | 10 | `render_sensitivity` | WACC × TGR grid with base case highlight | Standard DCF sensitivity |
 | 11 | `render_sources_uses` | LBO capital structure (two-column) | Standard LBO |
 | 12 | `render_trading_comps` | Peer multiples with target highlighted | Standard comps table |
 
-See `skills/ib-deck-engine/reference/template-catalog.md` for the full pattern catalog and JSON schemas.
+See `skills/ib-deck-engine/reference/template-catalog.md` for the full pattern catalog.
 
 ## Architecture
 
@@ -116,7 +86,7 @@ See `skills/ib-deck-engine/reference/template-catalog.md` for the full pattern c
 │  - Cite the source                  │
 └────────────────┬────────────────────┘
                  │
-                 │  Output: structured JSON
+                 │  Output: structured JSON spec
                  │
                  ▼
 ┌─────────────────────────────────────┐
@@ -133,28 +103,77 @@ See `skills/ib-deck-engine/reference/template-catalog.md` for the full pattern c
                  ▼
 ┌─────────────────────────────────────┐
 │  DETERMINISTIC RENDERER             │
-│  - Right-alignment ALWAYS           │
-│  - Proportional bars by math        │
-│  - Real table objects               │
-│  - Pixel-perfect by construction    │
+│  - Right-alignment of numeric cells │
+│  - Bar heights computed from data   │
+│  - Real PPT table objects           │
+│  - Layout rules enforced in code    │
 └────────────────┬────────────────────┘
                  │
                  ▼
             output.pptx
 ```
 
-This is the same architecture used by Beautiful.ai, Gamma, Pitch, UpSlide, and Macabacus. The LLM never touches pixels.
+The LLM never writes `Inches()`, `Pt()`, `RGBColor()`, or pixel coordinates. Layout rules live in the renderer functions, enforced by code.
+
+This is the same pattern used by Beautiful.ai, Gamma, and UpSlide: layout is a function of data, not a prompt-time decision.
+
+## Tests
+
+Determinism is the core promise of the architecture, so every template has a test that verifies it:
+
+```bash
+python -m pytest tests/ -v
+```
+
+13 tests pass:
+- 12 per-template determinism tests (each template rendered twice, normalized content hashes compared)
+- 1 stability test (`render_financial_summary` rendered 10 times, all 10 content hashes identical)
+
+The tests use a [normalized PPTX hash](tests/normalize.py) that strips volatile ZIP metadata (creation timestamps, last-modified fields) before hashing, so only the parts of the output that affect appearance are compared.
+
+This is the evidence trail for the "fixed input, repeated renders, identical output" claim. If any of those tests fail, the architecture's core promise is broken.
+
+## What this architecture optimizes for
+
+**Repeatability.** Same input → same output. The renderer doesn't depend on what the LLM felt like typing in any particular run.
+
+**Evaluability.** "Did the LLM pick the right template and fill the right data?" is a simpler test than "did the LLM write correct python-pptx code for this specific slide?"
+
+**Maintainability.** New templates are code, not prompts. They can be reviewed, versioned, and tested.
+
+**Lower failure surface.** Every pixel decision the LLM doesn't make is a pixel decision that can't be wrong.
+
+## What this plugin does not do (yet)
+
+Being honest about the scope of v0.1.0:
+
+- **No end-to-end SEC EDGAR extraction.** `/ib-extract` is a guided workflow that instructs Claude on the target JSON schema. A fully automated extraction command is on the roadmap.
+- **No Excel model generation.** The companion standalone repo includes DCF and LBO `xlsx` build scripts for the ADUS case study, but they're not wired into the plugin as commands yet.
+- **No cross-model audit command.** A programmatic 20-check audit exists in the companion repo for the ADUS case study. Making it a `/ib-audit` slash command is on the roadmap.
+- **No Office JS / in-PowerPoint support.** The renderer is python-pptx. It produces `.pptx` files from outside PowerPoint. An Office JS port would be needed for Cowork / in-PowerPoint use.
+- **Only 12 templates.** Real IB decks use ~25-30 patterns. See the [roadmap](#roadmap) for what's coming next.
+
+## Roadmap
+
+v0.2.0 goals:
+- Expand template library to 20+ (add precedent transactions, multi-chart dashboard, share price chart, debt schedule, value creation bridge, process timeline, buyer universe grid)
+- Automated `/ib-extract` that calls `edgartools` and produces the master JSON
+- Automated `/ib-dcf-model` and `/ib-lbo-model` using xlsxwriter
+- `/ib-audit` cross-model consistency check
+
+v0.3.0 goals:
+- Bank style variants (Moelis, Evercore, McKinsey presets)
+- MCP server wrapper so the renderer works in Claude Desktop and Cowork
+- Determinism test expansion to every template
+- GitHub Pages gallery
 
 ## Companion repo
 
-The standalone Python library (without the plugin packaging) is at:
-**https://github.com/gorajing/ib-deck-engine**
-
-It includes a complete worked example for Addus HomeCare Corp (ADUS) — DCF model, LBO model, master JSON, and rendered 14-slide deck.
+The standalone Python library (without the plugin packaging) and the complete ADUS case study artifacts live at **[gorajing/ib-deck-engine](https://github.com/gorajing/ib-deck-engine)**. That repo includes the DCF model (401 formulas), LBO model (244 formulas), master JSON extraction example, and a 14-slide rendered ADUS deck.
 
 ## Disclaimer
 
-This is a learning case study and template library. Models are simplified. Numbers in the example case study are illustrative. Always verify financial data against primary sources before relying on it for investment decisions.
+This is a learning project and early prototype. Models in the companion case study are simplified. Example numbers are illustrative. Always verify financial data against primary sources before relying on it for any investment decision.
 
 ## License
 

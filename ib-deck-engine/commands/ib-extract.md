@@ -1,42 +1,47 @@
 ---
-description: Extract a public company's 10-K financial data into a structured JSON master file
+description: Guided workflow for structuring a company's financials into the master JSON schema
 argument-hint: "[ticker]"
 ---
 
-# IB Extract — 10-K to Master JSON
+# IB Extract — Master JSON Workflow Guide
 
-Pull a public company's most recent 10-K filing from SEC EDGAR and structure it as
-a master JSON file that all downstream models and slides can reference.
+Walks Claude through assembling a company's financial data into the master JSON
+schema that every downstream template reads from.
 
-## Why this exists
+## What this command IS (in v0.1.0)
 
-The single biggest architectural problem in IB workflows is **cross-model desync**:
-the DCF, LBO, and pitch deck use different versions of the same numbers because each
-was built independently. This command produces a single source of truth.
+A workflow guide that tells Claude:
+- What fields the master JSON should contain
+- What cross-checks to run (balance sheet balances, cash ties, etc.)
+- How to format the output so downstream templates can read it
 
-## Workflow
+## What this command is NOT (in v0.1.0)
 
-If a ticker is provided as $1, use it. Otherwise ask which company.
+- **Not an autonomous SEC EDGAR pipeline.** This version does not ship with an
+  automated extractor bundled into the plugin. If you want automated extraction,
+  either install `edgartools[ai]` separately and write a short one-off script,
+  or see the worked extraction example in the companion repo at
+  github.com/gorajing/ib-deck-engine.
+- **Not a parser.** Claude structures data the user provides (pasted financials,
+  uploaded JSON, manual entry) into the schema.
 
-### Step 1: Pull the filing
+A fully automated `/ib-extract` that directly calls `edgartools` is on the
+[v0.2.0 roadmap](../../../README.md#roadmap).
 
-Use `edgartools` to fetch the most recent original 10-K (not 10-K/A amendment):
-```python
-from edgar import Company, set_identity
-set_identity("Your Name your@email.com")
-c = Company("ADUS")
-filing = c.get_filings(form="10-K", amendments=False).latest(1)
-```
+## Why a structured master JSON matters
 
-### Step 2: Extract structured data
+The "single source of truth" pattern prevents cross-model desync. If the DCF, LBO,
+and pitch deck all read from the same JSON, they cannot diverge on revenue, EBITDA,
+share count, or tax rate. Every downstream template call reads from the same source.
 
-Parse into this schema:
+## The target schema
+
 ```json
 {
   "metadata": {
     "company": "...", "ticker": "...", "cik": "...",
     "filing_date": "...", "fiscal_year_end": "...",
-    "extraction_date": "...", "source": "SEC EDGAR via edgartools"
+    "extraction_date": "...", "source": "..."
   },
   "income_statement": {
     "FYxxxxA": {
@@ -56,31 +61,52 @@ Parse into this schema:
   "key_assumptions": {...},
   "debt_detail": {...},
   "business_description": {...},
-  "risk_factors": {...},
   "missing_data": [...]
 }
 ```
 
-### Step 3: Cross-checks
+A complete example is in the companion repo:
+https://github.com/gorajing/ib-deck-engine/blob/main/case_study/adus_10k_master.json
 
-Verify before saving:
+## Workflow
+
+If a ticker is provided as $1, use it. Otherwise ask:
+"What company are we working on, and how is the data arriving — pasted financials,
+CSV, existing JSON, or should we walk through the 10-K together?"
+
+### Step 1: Get the source data
+
+Options in priority order:
+1. User provides existing structured data (JSON / CSV / pasted financials)
+2. User has the 10-K filing and wants to walk through the key line items together
+3. User runs a one-off `edgartools` script separately
+
+### Step 2: Structure into the schema
+
+Fill each field. For anything missing from the source, add it to the `missing_data`
+array with a note on what's needed. **Never fabricate numbers to fill gaps.**
+
+### Step 3: Run cross-checks
+
+Before saving:
 - Balance sheet balances: Assets = Liabilities + Equity (each year)
 - Cash ties: Beginning + Net Change = Ending = BS Cash
 - Net income flows: IS NI = CF starting NI
 - Retained earnings rollforward: Prior RE + NI = Current RE
 
-If any check fails, flag it in the JSON's `missing_data` field. Don't fabricate.
+If any check fails, flag it in `missing_data`.
 
 ### Step 4: Save
 
-Save as `{ticker}_master.json` in the current directory.
+Save as `{ticker}_master.json` in the current working directory.
 
 ## Critical rules
 
-- **Never fabricate data** — if a field is missing from the 10-K, mark it as null and note it in `missing_data`
-- **Round to thousands** — all values in $000s for consistency
+- **Never fabricate data** — null values with notes in `missing_data` are always
+  better than guessed numbers
+- **Round consistently** — all values in $000s for consistency across templates
 - **3 fiscal years minimum** — most recent + 2 prior
-- **Source every assumption** — `effective_tax_rate_calc: "= 31,535 / 127,445"`
+- **Source every assumption** — e.g., `"effective_tax_rate_calc": "= 31,535 / 127,445"`
 
 ## Example
 
@@ -88,5 +114,5 @@ Save as `{ticker}_master.json` in the current directory.
 /ib-extract ADUS
 ```
 
-Pulls Addus HomeCare's latest 10-K, extracts ~50 line items, runs 8 cross-checks,
-saves as `ADUS_master.json`.
+Walks through structuring Addus HomeCare's financials. A complete reference output
+lives at `case_study/adus_10k_master.json` in the companion repo.
