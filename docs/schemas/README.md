@@ -14,6 +14,18 @@ validator against the examples.
 
 ### Template schemas (5, canonical core)
 
+**Implementation status at a glance** (as of commit `bd783be`):
+
+- **`financial_summary`** — implemented (`render_financial_summary`)
+- **`trading_comps`** — implemented (`render_trading_comps`)
+- **`sensitivity`** — implemented (`render_sensitivity`)
+- **`operating_metrics`** — implemented as an alias of `render_dual_chart`; canonical rename lands in v0.2
+- **`transaction_comps`** — **proposed, not implemented.** Schema documents the intended shape; renderer is a v0.2 deliverable.
+
+Schemas validate specs today for the four implemented templates. The
+`transaction_comps` schema is ahead of the renderer on purpose, so tools can
+start emitting valid specs before the renderer ships.
+
 | File | Canonical name | Status in v0.1 | Status in v0.2 |
 |---|---|---|---|
 | [`financial_summary.schema.json`](financial_summary.schema.json) | `financial_summary` | Implemented as `render_financial_summary` | Schema matches current shape, plus optional `source_refs` and `unit` |
