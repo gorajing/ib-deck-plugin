@@ -1,0 +1,57 @@
+{
+  "title": "Preliminary Valuation Summary Implies a Range of $104-$174 Per Share Across Methodologies",
+  "subtitle": "(All financials in $ per share unless otherwise stated)",
+  "source": "Source: DCF and LBO models. Management projections. FactSet consensus estimates.",
+  "slide_number": 10,
+  "methodologies": [
+    {
+      "category": "DCF\nPerpetuity",
+      "category_color": "#1B365D",
+      "description": "WACC: 8.5-11.0%\nTGR: 2.0-4.0%",
+      "low": 104,
+      "high": 174,
+      "bar_color": "#1B365D",
+      "implied_multiples": "8.5x - 15.2x"
+    },
+    {
+      "category": "DCF\nExit Multiple",
+      "category_color": "#1B365D",
+      "description": "WACC: 8.5-11.0%\nExit: 10.0-14.0x EBITDA",
+      "low": 111,
+      "high": 178,
+      "bar_color": "#3B6B9D",
+      "implied_multiples": "9.1x - 15.8x"
+    },
+    {
+      "category": "Trading\nComps",
+      "category_color": "#E07020",
+      "description": "Selected Public Companies\n10.0x - 13.5x NTM EBITDA",
+      "low": 115,
+      "high": 155,
+      "bar_color": "#E07020",
+      "implied_multiples": "10.0x - 13.5x"
+    },
+    {
+      "category": "LBO\nAnalysis",
+      "category_color": "#2E8B57",
+      "description": "2.0-3.0x MOIC target\n15-25% IRR range",
+      "low": 95,
+      "high": 140,
+      "bar_color": "#2E8B57",
+      "implied_multiples": "8.0x - 12.0x"
+    },
+    {
+      "category": "52-Week\nTrading",
+      "category_color": "#888888",
+      "description": "52-Week High / Low\nHistorical trading range",
+      "low": 85,
+      "high": 135,
+      "bar_color": "#AAAAAA",
+      "implied_multiples": "n/a"
+    }
+  ],
+  "reference_lines": [
+    {"price": 129, "label": "DCF Base", "color": "#1B365D"},
+    {"price": 98, "label": "Current", "color": "#C00000"}
+  ]
+}

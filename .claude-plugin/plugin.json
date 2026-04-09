@@ -1,0 +1,8 @@
+{
+  "name": "ib-deck-engine",
+  "version": "0.1.0",
+  "description": "Investment banking slide template library with JSON spec → deterministic pixel rendering. Solves cross-model desync, openpyxl corruption, and spatial execution failures by separating content reasoning from layout execution.",
+  "author": {
+    "name": "gorajing"
+  }
+}

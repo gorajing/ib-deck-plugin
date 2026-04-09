@@ -1,0 +1,19 @@
+{
+  "name": "ib-deck-plugin",
+  "owner": {
+    "name": "gorajing"
+  },
+  "metadata": {
+    "description": "Investment banking slide template library for Claude Code. JSON spec → deterministic pixel rendering. Solves cross-model desync, openpyxl corruption, and spatial execution failures.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "ib-deck-engine",
+      "source": ".",
+      "description": "14-template IB slide library. Build pitch decks, football fields, financial summaries, sensitivity grids, sources & uses, trading comps via /ib-deck and friends.",
+      "category": "investment-banking",
+      "tags": ["investment-banking", "powerpoint", "financial-models", "dcf", "lbo", "templates"]
+    }
+  ]
+}

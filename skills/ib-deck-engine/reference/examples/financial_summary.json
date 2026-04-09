@@ -1,0 +1,17 @@
+{
+  "title": "Addus Has Delivered Consistent Revenue Growth with Expanding Profitability",
+  "section_header": "Historical Financial Summary ($ in thousands)",
+  "headers": ["Metric", "FY2023A", "FY2024A", "FY2025A", "3Y CAGR"],
+  "rows": [
+    {"label": "Revenue", "values": ["1,058,651", "1,154,599", "1,422,530", "14.4%"], "style": "bold"},
+    {"label": "% Growth", "values": ["11.3%", "9.1%", "23.2%", ""], "style": "pct"},
+    {"label": "Gross Profit", "values": ["339,876", "375,021", "461,874", "16.6%"], "style": "bold"},
+    {"label": "% Margin", "values": ["32.1%", "32.5%", "32.5%", ""], "style": "pct"},
+    {"label": "EBITDA", "values": ["105,082", "116,221", "155,027", "21.4%"], "style": "highlight"},
+    {"label": "% Margin", "values": ["9.9%", "10.1%", "10.9%", ""], "style": "pct"},
+    {"label": "Net Income", "values": ["62,516", "73,598", "95,910", "23.8%"], "style": "bold"},
+    {"label": "Diluted EPS", "values": ["$3.83", "$4.23", "$5.22", "16.7%"], "style": "normal"}
+  ],
+  "source": "Source: SEC EDGAR. ADUS FY2025 10-K filed February 24, 2026.",
+  "slide_number": 6
+}

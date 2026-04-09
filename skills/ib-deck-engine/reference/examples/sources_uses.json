@@ -1,0 +1,19 @@
+{
+  "title": "Preliminary LBO Capital Structure Sources Total Capitalization of $1,902M",
+  "subtitle": "Based on 12.0x LTM EBITDA of $155M | 4.5x leverage | 63% sponsor equity contribution",
+  "source": "Source: LBO model. Transaction assumptions illustrative.",
+  "slide_number": 14,
+  "sources": [
+    {"label": "Term Loan B (SOFR + 450)", "amount": 700000, "pct": "36.8%"},
+    {"label": "Revolver (undrawn)", "amount": 0, "pct": "0.0%"},
+    {"label": "Sponsor Equity", "amount": 1202229, "pct": "63.2%"},
+    {"label": "Total Sources", "amount": 1902229, "pct": "100.0%", "total": true}
+  ],
+  "uses": [
+    {"label": "Enterprise Value", "amount": 1860324, "pct": "97.8%"},
+    {"label": "Advisory Fees (1.5%)", "amount": 27905, "pct": "1.5%"},
+    {"label": "Financing Fees (2.0%)", "amount": 14000, "pct": "0.7%"},
+    {"label": "Total Uses", "amount": 1902229, "pct": "100.0%", "total": true}
+  ],
+  "balance_check": "Balance Check: Sources = Uses = $1,902,229K ✓"
+}
