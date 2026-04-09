@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/provenance.schema.json",
+  "title": "workbook provenance",
+  "description": "Schema for a provenance.json file that maps workbook ranges to canonical metric names, produced by /ib-import-excel. Lives alongside the workbook file (or in the analyst's workspace, see import_config.schema.json for the workspace-local variant). The audit layer uses this file to resolve canonical metric references back to workbook cells, and to detect that the workbook has changed between import and audit runs.",
+  "type": "object",
+  "required": ["workbook", "workbook_hash", "generated_at", "metrics"],
+  "additionalProperties": false,
+  "properties": {
+    "workbook": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filename of the source workbook (not the full path). Used in audit findings for human-readable output."
+    },
+    "workbook_path": {
+      "type": "string",
+      "description": "Optional relative or absolute path to the workbook file, resolved at audit time."
+    },
+    "workbook_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 hash of the workbook file at the time this provenance was generated. Used by /ib-audit to detect that the workbook has changed since import and to re-run mapping confirmation on mismatched ranges."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this provenance file was created or last updated."
+    },
+    "last_recalc_detected": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Best-effort timestamp of the workbook's last full recalculation, as recorded in the file's metadata. Used by the audit's workbook_recalc_staleness check. Optional because not all workbooks carry this metadata."
+    },
+    "period_axis": {
+      "type": "object",
+      "description": "Optional declaration of which range in the workbook contains the period labels (e.g., FY2023A, FY2024A). Lets the audit layer align period columns across the spec and workbook without depending on implicit column order.",
+      "required": ["sheet", "range"],
+      "additionalProperties": false,
+      "properties": {
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^[A-Z]+[0-9]+:[A-Z]+[0-9]+$"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Cached period labels read at import time; re-verified at audit time."
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metric"
+      },
+      "description": "List of canonical metric mappings, each linking a canonical metric name to a workbook range."
+    },
+    "mapping_version": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Version number of this file's schema. Incremented on breaking schema changes; lets tools detect incompatible provenance files."
+    }
+  },
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "required": ["canonical", "sheet", "range"],
+      "additionalProperties": false,
+      "properties": {
+        "canonical": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9_]*$",
+          "description": "Canonical metric name. Conventions: PascalCase or snake_case identifier without spaces. Examples: 'Revenue', 'Gross_Profit', 'EBITDA', 'Diluted_EPS'. Must be unique within this provenance file."
+        },
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^[A-Z]+[0-9]+(:[A-Z]+[0-9]+)?$",
+          "description": "Workbook range for this metric across all periods. Typically a single row across multiple columns (e.g., 'C42:H42')."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"],
+          "description": "Unit of the values in this range. User-confirmed at import time (not auto-inferred)."
+        },
+        "confirmed_by_user": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the analyst explicitly confirmed this mapping during /ib-import-excel. The audit treats unconfirmed mappings as WARN-level, not FAIL-level."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional free-text notes about this mapping (e.g., 'Uses adjusted EBITDA from Ratios tab, not raw EBITDA from Model tab')."
+        }
+      }
+    }
+  }
+}

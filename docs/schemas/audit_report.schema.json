@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/audit_report.schema.json",
+  "title": "audit report",
+  "description": "Schema for an audit.report.json file — machine-readable output of /ib-audit. Designed so that other tools (a CI job, a review dashboard, a Slack bot) can consume audit results without parsing human-readable text. Every run of /ib-audit produces exactly one audit report.",
+  "type": "object",
+  "required": ["run_id", "generated_at", "workbook", "specs", "summary", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this audit run. Convention: '<iso8601>-<short_hash>' (e.g., '2026-04-09T14-22-00Z-a7c3')."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this audit report was generated."
+    },
+    "workbook": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filename of the workbook the audit ran against."
+    },
+    "workbook_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 hash of the workbook at audit time. A mismatch against the provenance file's workbook_hash surfaces as a WARN."
+    },
+    "workbook_last_recalc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Best-effort timestamp of the workbook's last full recalculation. Used to compute workbook_recalc_staleness_hours."
+    },
+    "workbook_recalc_staleness_hours": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Hours elapsed between workbook_last_recalc and generated_at. The audit emits a WARN when this exceeds 24 (configurable)."
+    },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Paths (relative or absolute) of the spec files included in this audit run."
+    },
+    "exceptions_file": {
+      "type": "string",
+      "description": "Optional path to the deck.exceptions.json file used for this audit run. Null or omitted if no exceptions file was provided."
+    },
+    "summary": {
+      "type": "object",
+      "required": ["pass", "fail", "warn", "info"],
+      "additionalProperties": false,
+      "properties": {
+        "pass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fail": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Counts of findings by severity. The audit command's exit code is 0 when fail == 0 and 1 otherwise."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      },
+      "description": "List of individual audit findings, in the order they were generated. May be empty if no checks fired."
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["severity", "check", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "severity": {
+          "enum": ["PASS", "FAIL", "WARN", "INFO"],
+          "description": "Finding severity. PASS findings are usually omitted from the findings array (they're counted in summary.pass); FAIL, WARN, and INFO are always listed."
+        },
+        "check": {
+          "type": "string",
+          "enum": [
+            "value_mismatch",
+            "unit_mismatch",
+            "sign_mismatch",
+            "subtotal_tie_out",
+            "cross_slide_consistency",
+            "missing_source_ref",
+            "workbook_recalc_staleness",
+            "required_source_line",
+            "exception_matched",
+            "exception_expired"
+          ],
+          "description": "Check identifier. The initial set of 10 checks is defined in docs/v0.2-scope.md section 6. New checks may be added in v0.3+ without breaking this schema."
+        },
+        "slide_id": {
+          "type": "string",
+          "description": "Identifier of the slide this finding applies to (when applicable — not every check is slide-scoped)."
+        },
+        "metric": {
+          "type": "string",
+          "description": "Metric name (e.g., 'EBITDA'). Present for slide-scoped findings."
+        },
+        "period": {
+          "type": "string",
+          "description": "Period label (e.g., 'FY2025A'). Present for slide-scoped findings."
+        },
+        "expected": {
+          "description": "The value as it appears in the spec. Type matches the spec's value type (number or string).",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "null"}
+          ]
+        },
+        "actual": {
+          "description": "The value as it appears in the workbook. Type matches the spec's value type (number or string).",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "null"}
+          ]
+        },
+        "source_ref": {
+          "description": "The source_ref that was evaluated to produce this finding. Useful for debugging mapping issues.",
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "required": ["workbook", "sheet", "cell"],
+              "properties": {
+                "workbook": {"type": "string"},
+                "sheet": {"type": "string"},
+                "cell": {"type": "string"}
+              }
+            }
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable message describing the finding. Always present."
+        },
+        "exception_matched": {
+          "description": "When this finding was downgraded from FAIL to INFO by a matching entry in deck.exceptions.json, this field carries the exception id. Null otherwise.",
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string"}
+          ]
+        }
+      }
+    }
+  }
+}

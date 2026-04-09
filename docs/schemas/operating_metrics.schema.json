@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/operating_metrics.schema.json",
+  "title": "operating_metrics spec",
+  "description": "Canonical schema for an operating_metrics slide — KPI trends over time, rendered as one or more side-by-side bar charts with period labels, CAGR annotations, and a secondary metric row underneath each chart (e.g., YoY growth under a revenue bar, margin % under an EBITDA bar). STATUS: in v0.1 this template ships under the name `render_dual_chart`; v0.2 renames it to `operating_metrics` canonically and retains `dual_chart` as a deprecation alias that prints a one-line warning. Unlike the table templates, values here are numeric (bar heights); the secondary_values array carries the display strings shown below the bars.",
+  "type": "object",
+  "required": ["template", "title", "charts"],
+  "additionalProperties": false,
+  "properties": {
+    "template": {
+      "enum": ["operating_metrics", "dual_chart"],
+      "description": "Literal discriminator. 'operating_metrics' is canonical; 'dual_chart' is accepted as a deprecation alias for one version."
+    },
+    "slide_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Action title (e.g., 'Consistent Revenue Growth Accompanied by Meaningful EBITDA Margin Expansion')."
+    },
+    "charts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/chart"
+      },
+      "description": "Array of 1 or 2 chart objects. The current renderer lays out up to 2 charts side-by-side; if more are needed, use a separate slide."
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_workbook": {
+      "type": "string"
+    },
+    "source_sheet_default": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "chart": {
+      "type": "object",
+      "required": ["subtitle", "periods", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "subtitle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Chart subtitle shown above the bars (e.g., 'Revenue ($M)' or 'EBITDA ($M) & Margin')."
+        },
+        "periods": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Period labels shown beneath each bar (e.g., '2022A', '2023A', '2024A', '2025A')."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Numeric values for bar heights. Must be the same length as periods. Unlike the table templates, these are numbers, not pre-formatted strings — the renderer formats them for display. Note: the Python API of the current renderer also accepts an optional `format` callable, but callables cannot appear in a JSON spec and are therefore omitted from this schema."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color for the bars. Defaults to the library's primary navy."
+        },
+        "cagr": {
+          "type": "string",
+          "description": "Optional CAGR annotation shown in the top-right of the chart (e.g., '14.4%'). Rendered in green bold."
+        },
+        "secondary_label": {
+          "type": "string",
+          "description": "Label for the secondary metric row (e.g., 'YoY Growth', 'EBITDA Margin'). Shown beneath the period labels."
+        },
+        "secondary_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pre-formatted display strings for the secondary metric row, one per period. Must be the same length as periods when present."
+        },
+        "source_refs": {
+          "$ref": "source_refs.schema.json#/$defs/sourceRefArray",
+          "description": "Optional parallel array of source refs for the values array. Must have the same length as values when present."
+        },
+        "secondary_source_refs": {
+          "$ref": "source_refs.schema.json#/$defs/sourceRefArray",
+          "description": "Optional parallel array of source refs for the secondary_values array."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"],
+          "description": "Unit for the primary values."
+        }
+      }
+    }
+  }
+}

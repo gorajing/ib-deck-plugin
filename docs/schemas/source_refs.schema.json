@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/source_refs.schema.json",
+  "title": "source_refs",
+  "description": "Shared schema fragment for source_refs arrays used by every canonical template spec. A source_refs array is parallel to a values array: source_refs[i] describes where values[i] came from in the source workbook. This schema defines the allowed forms for a single source_refs element; it also defines a reusable 'array' form for the common parallel-array case.",
+  "$defs": {
+    "cellAddress": {
+      "type": "string",
+      "pattern": "^[A-Z]+[0-9]+$",
+      "description": "An absolute-column, absolute-row Excel cell address without sheet prefix (e.g., 'D42'). The sheet is inherited from the spec's source_sheet_default."
+    },
+    "rangeAddress": {
+      "type": "string",
+      "pattern": "^[A-Z]+[0-9]+:[A-Z]+[0-9]+$",
+      "description": "An Excel range address without sheet prefix (e.g., 'D42:D45')."
+    },
+    "cellRef": {
+      "type": "object",
+      "description": "Explicit cell reference with sheet and cell address.",
+      "required": ["sheet", "cell"],
+      "additionalProperties": false,
+      "properties": {
+        "sheet": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Worksheet name."
+        },
+        "cell": {
+          "$ref": "#/$defs/cellAddress"
+        }
+      }
+    },
+    "rangeRef": {
+      "type": "object",
+      "description": "Range reference with an aggregator. Used when a single spec value represents a sum, mean, or other aggregation over multiple workbook cells (e.g., a subtotal row).",
+      "required": ["sheet", "range", "aggregator"],
+      "additionalProperties": false,
+      "properties": {
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "$ref": "#/$defs/rangeAddress"
+        },
+        "aggregator": {
+          "type": "string",
+          "enum": ["sum", "mean", "median", "max", "min"],
+          "description": "How the audit should reduce the range to a single comparable value."
+        }
+      }
+    },
+    "sourceRef": {
+      "description": "A single source_refs element. One of: null (value is computed from others in the spec), a bare cell address string (uses source_sheet_default), an explicit cell reference object, or a range reference with aggregator. Formula references are intentionally not supported: the audit compares evaluated values only.",
+      "oneOf": [
+        {
+          "type": "null",
+          "description": "Value is computed from others in the spec (e.g., a growth rate derived from two adjacent revenue values). The audit validates by recomputation, not by workbook lookup."
+        },
+        {
+          "$ref": "#/$defs/cellAddress"
+        },
+        {
+          "$ref": "#/$defs/cellRef"
+        },
+        {
+          "$ref": "#/$defs/rangeRef"
+        }
+      ]
+    },
+    "sourceRefArray": {
+      "type": "array",
+      "description": "A parallel array of source_refs, one per value in the associated values array. Must have the same length as the values array it parallels.",
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      }
+    }
+  },
+  "$ref": "#/$defs/sourceRef"
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/transaction_comps.schema.json",
+  "title": "transaction_comps spec",
+  "description": "Canonical schema for a transaction_comps slide spec. Renders a precedent M&A multiples table. Structurally similar to trading_comps but with different row defaults (each row is a transaction, not a company) and a highlight convention for the most-comparable deal. STATUS: new in v0.2 — not yet implemented by the renderer in v0.1. This schema documents the proposed shape so tools can start producing specs that will validate once the renderer ships.",
+  "type": "object",
+  "required": ["template", "title", "headers", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "template": {
+      "const": "transaction_comps"
+    },
+    "slide_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Action title (e.g., 'Precedent Home Care Transactions Support a Premium Valuation Range')."
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "header_text": {
+      "type": "string",
+      "description": "Text shown in the navy section header bar. Defaults to 'Selected Precedent Transactions'."
+    },
+    "headers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      },
+      "description": "Column headers. A typical default set is: ['Date', 'Target', 'Acquirer', 'EV ($M)', 'EV/Revenue', 'EV/EBITDA', 'Premium %']."
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    },
+    "highlight_row": {
+      "type": "integer",
+      "minimum": -1,
+      "default": -1,
+      "description": "Zero-based index of the deal that represents the most-comparable precedent (rendered with a highlight). Use -1 to disable."
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_workbook": {
+      "type": "string"
+    },
+    "source_sheet_default": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": ["values"],
+      "additionalProperties": false,
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pre-formatted display strings, one per column in headers. Unlike trading_comps where the first column is a dedicated 'company' field, transaction_comps treats all columns uniformly: the first entry is typically the date or target and is included in values."
+        },
+        "summary": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, renders as a Mean/Median-style summary row."
+        },
+        "source_refs": {
+          "$ref": "source_refs.schema.json#/$defs/sourceRefArray"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"]
+        }
+      }
+    }
+  }
+}

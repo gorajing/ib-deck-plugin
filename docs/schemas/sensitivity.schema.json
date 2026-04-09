@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/sensitivity.schema.json",
+  "title": "sensitivity spec",
+  "description": "Canonical schema for a two-axis sensitivity grid (e.g., WACC x Terminal Growth Rate, EV/EBITDA x Revenue Multiple). Renders a grid with row axis labels on the left, column axis labels across the top, and a highlighted base case cell. Values are typically implied share prices, equity values, or multiples, stored as pre-formatted display strings.",
+  "type": "object",
+  "required": ["template", "title", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "template": {
+      "const": "sensitivity"
+    },
+    "slide_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "table_label": {
+      "type": "string",
+      "description": "Label shown above the table (e.g., 'Implied Share Price ($)' or 'Enterprise Value ($M)'). Defaults to 'Implied Share Price ($)'."
+    },
+    "row_axis_label": {
+      "type": "string",
+      "description": "Label for the row axis (e.g., 'WACC →'). Rendered italic gray to the left of the table."
+    },
+    "col_axis_label": {
+      "type": "string",
+      "description": "Label for the column axis (e.g., 'Terminal Growth Rate →'). Rendered italic gray centered above the column headers."
+    },
+    "data": {
+      "type": "object",
+      "required": ["row_headers", "col_headers", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "row_headers": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels for each row of the grid (e.g., ['8.5%', '9.0%', '9.5%', ...])."
+        },
+        "col_headers": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels for each column of the grid."
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "2D array of pre-formatted display strings. Outer array has len(row_headers) entries; each inner array has len(col_headers) entries."
+        },
+        "base_row": {
+          "type": "integer",
+          "minimum": -1,
+          "default": -1,
+          "description": "Zero-based row index of the base case cell (highlighted). Use -1 to disable."
+        },
+        "base_col": {
+          "type": "integer",
+          "minimum": -1,
+          "default": -1,
+          "description": "Zero-based column index of the base case cell."
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "source_refs.schema.json#/$defs/sourceRef"
+            }
+          },
+          "description": "Optional 2D parallel array of source refs, one per cell in values. Outer array has len(row_headers) entries; inner arrays have len(col_headers). Used by the audit layer to verify that the grid ties back to the workbook model."
+        }
+      }
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_workbook": {
+      "type": "string"
+    },
+    "source_sheet_default": {
+      "type": "string"
+    }
+  }
+}

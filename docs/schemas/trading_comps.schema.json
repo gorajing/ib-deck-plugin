@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/trading_comps.schema.json",
+  "title": "trading_comps spec",
+  "description": "Canonical schema for a trading_comps slide spec. Renders a public-company trading multiples table with optional target-row highlight (yellow) and summary rows (Mean/Median in light gray). Structurally similar to financial_summary but with a company-first row shape and different highlight semantics.",
+  "type": "object",
+  "required": ["template", "title", "headers", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "template": {
+      "const": "trading_comps",
+      "description": "Literal discriminator."
+    },
+    "slide_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Action title (e.g., 'Addus Trades at a Discount to Home Care Services Peers Despite Superior Growth and Margins')."
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "header_text": {
+      "type": "string",
+      "description": "Text shown in the navy section header bar (e.g., 'Selected Home Care Services Trading Comparables'). Renderer defaults to 'Selected Public Companies' if omitted."
+    },
+    "headers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      },
+      "description": "Column headers starting with the company column (e.g., 'Company') followed by one header per numeric or metadata column (e.g., 'Ticker', 'Market Cap ($M)', 'EV/EBITDA')."
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      },
+      "description": "Data rows. Each row's values array must have exactly len(headers) - 1 entries."
+    },
+    "target_row": {
+      "type": "integer",
+      "minimum": -1,
+      "default": -1,
+      "description": "Zero-based index of the row that represents the target company (rendered with yellow highlight and navy bold text). Use -1 to disable the highlight."
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_workbook": {
+      "type": "string"
+    },
+    "source_sheet_default": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": ["company", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "type": "string",
+          "description": "Company name shown in the first column. Also used for Mean/Median summary rows."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pre-formatted display strings for each column after the company column. Must equal len(headers) - 1 in length. Empty string is allowed for cells that don't apply to summary rows (e.g., ticker column on a Mean row)."
+        },
+        "summary": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, the row is rendered with a light gray alternate background and bold text. Used for Mean/Median rows at the bottom of the table."
+        },
+        "source_refs": {
+          "$ref": "source_refs.schema.json#/$defs/sourceRefArray"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"]
+        }
+      }
+    }
+  }
+}

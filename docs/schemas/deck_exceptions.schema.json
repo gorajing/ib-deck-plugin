@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/deck_exceptions.schema.json",
+  "title": "deck exceptions",
+  "description": "Schema for a deck.exceptions.json file — durable record of discrepancies the analyst has reviewed and marked as intentional. The audit layer reads this file and downgrades matched FAIL findings to INFO, preserving the audit's signal without generating false alarms on intentional deviations. This file is mandatory for the audit workflow to be credible — without it, analysts disable the audit after the first run.",
+  "type": "object",
+  "required": ["deck", "exceptions"],
+  "additionalProperties": false,
+  "properties": {
+    "deck": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable identifier for the deck these exceptions belong to (e.g., 'ADUS_board_deck_v3'). Used in audit reports and not programmatically meaningful."
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exception"
+      },
+      "description": "List of reviewed exceptions. Each exception matches a specific {slide_id, metric, period} combination."
+    }
+  },
+  "$defs": {
+    "exception": {
+      "type": "object",
+      "required": ["id", "slide_id", "metric", "period", "reason", "reviewer", "reviewed_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique identifier for this exception. Convention: 'exc-YYYY-MM-DD-NNN' (e.g., 'exc-2026-04-09-001'). Used by the audit report to link findings back to exceptions."
+        },
+        "slide_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the slide this exception applies to. Typically the template name or a spec file stem (e.g., 'financial_summary' or 'slide_06_financial_summary')."
+        },
+        "metric": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Metric name this exception applies to (e.g., 'EBITDA', 'Revenue'). Must match the row label in the spec to be matched."
+        },
+        "period": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Period label this exception applies to (e.g., 'FY2025A', 'LTM')."
+        },
+        "expected_value": {
+          "description": "The value as it appears in the spec/slide. Schema allows number or string to accommodate pre-formatted display strings.",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"}
+          ]
+        },
+        "actual_value": {
+          "description": "The value as it appears in the workbook. Schema allows number or string.",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"}
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Free-text explanation of why this discrepancy is intentional. Surfaced verbatim in the audit report. Required — an exception without a reason is a suppression, not an exception."
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the person who reviewed and approved this exception (typically an email address)."
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when this exception was created or last re-affirmed."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional expiration timestamp. If present and in the past, the exception is ignored and the underlying finding fires again. Prevents stale exceptions from hiding real regressions across quarterly refresh cycles."
+        }
+      }
+    }
+  }
+}

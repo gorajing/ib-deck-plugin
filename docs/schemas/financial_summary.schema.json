@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/financial_summary.schema.json",
+  "title": "financial_summary spec",
+  "description": "Canonical schema for a financial_summary slide spec. Renders a historical P&L summary with action title, navy section header bar, right-aligned numeric columns, bold subtotal rows, italic gray percentage rows, and optional row highlighting. Values are stored as pre-formatted display strings; source_refs provide the optional link back to a workbook cell for audit purposes.",
+  "type": "object",
+  "required": ["template", "title", "headers", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "template": {
+      "const": "financial_summary",
+      "description": "Literal discriminator that identifies this spec as a financial_summary. Required for tools that dispatch by template name."
+    },
+    "slide_number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Slide number shown in the footer chrome. Optional; omitted when the slide is rendered standalone."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Action title at the top of the slide (e.g., 'Addus Has Delivered Consistent Revenue Growth with Expanding Profitability'). Should be a declarative thesis, not a generic header."
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Optional subtitle below the action title."
+    },
+    "section_header": {
+      "type": "string",
+      "description": "Text shown in the navy section header bar above the table (e.g., 'Historical Financial Summary ($ in thousands)'). Renderer defaults to empty string if omitted."
+    },
+    "headers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      },
+      "description": "Column headers, starting with the label column (e.g., 'Metric') followed by one header per data column (e.g., 'FY2023A', 'FY2024A', '3Y CAGR'). The first header labels the metric column; the remaining headers label the numeric columns which are right-aligned."
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      },
+      "description": "Data rows. Each row's values array must have exactly len(headers) - 1 entries."
+    },
+    "source": {
+      "type": "string",
+      "description": "Source citation line shown at the bottom of the slide. Required by the audit (check 8: required_source_line) but optional at the schema level to allow partial specs during authoring."
+    },
+    "source_workbook": {
+      "type": "string",
+      "description": "Optional workbook filename this spec's values were sourced from. Used by the audit layer to resolve relative source_refs."
+    },
+    "source_sheet_default": {
+      "type": "string",
+      "description": "Optional default sheet name. Bare cell addresses in source_refs (e.g., 'D42') are resolved against this sheet; explicit object references can override it."
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": ["label", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Row label shown in the first column (e.g., 'Revenue', '% Growth', 'EBITDA')."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pre-formatted display strings for each data column. Must have the same length across rows and equal to len(headers) - 1. Empty string is allowed for cells intentionally left blank (e.g., no CAGR for a derived % Growth row)."
+        },
+        "style": {
+          "type": "string",
+          "enum": ["bold", "pct", "highlight", "normal"],
+          "default": "normal",
+          "description": "Row style: 'bold' for subtotal rows (Revenue, Gross Profit, EBITDA, Net Income, Diluted EPS), 'pct' for italic-gray percentage rows (% Growth, % Margin — also indented), 'highlight' for rows drawn with a light blue background (typically EBITDA), 'normal' for plain rows."
+        },
+        "source_refs": {
+          "$ref": "source_refs.schema.json#/$defs/sourceRefArray",
+          "description": "Optional parallel array of source refs, one per entry in values. Must be the same length as values when present. Ignored by the renderer; consumed by the audit layer."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"],
+          "description": "Unit declaration used by the audit's unit_mismatch check. Optional."
+        }
+      }
+    }
+  }
+}

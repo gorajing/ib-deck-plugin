@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gorajing/ib-deck-plugin/main/docs/schemas/import_config.schema.json",
+  "title": "workspace import config",
+  "description": "Schema for an import_config.json file — the workspace-local variant of provenance.json. Functionally equivalent to provenance.schema.json but written in the analyst's workspace rather than alongside the workbook. Either format can be used interchangeably by /ib-audit. The workspace-local form is preferred when the analyst lacks write permission to the workbook's directory (e.g., shared SharePoint folders).",
+  "type": "object",
+  "required": ["workbook", "workbook_hash", "metric_mappings"],
+  "additionalProperties": false,
+  "properties": {
+    "workbook": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filename of the source workbook."
+    },
+    "workbook_path": {
+      "type": "string",
+      "description": "Path to the workbook file, typically relative to the workspace root."
+    },
+    "workbook_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 hash of the workbook at import time."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_axis": {
+      "type": "object",
+      "required": ["sheet", "range"],
+      "additionalProperties": false,
+      "properties": {
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^[A-Z]+[0-9]+:[A-Z]+[0-9]+$"
+        }
+      }
+    },
+    "metric_mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["canonical", "sheet", "range"],
+        "additionalProperties": false,
+        "properties": {
+          "canonical": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9_]*$"
+          },
+          "sheet": {
+            "type": "string",
+            "minLength": 1
+          },
+          "range": {
+            "type": "string",
+            "pattern": "^[A-Z]+[0-9]+(:[A-Z]+[0-9]+)?$"
+          },
+          "unit": {
+            "type": "string",
+            "enum": ["USD", "USD_thousands", "USD_millions", "USD_billions", "percent", "multiple", "count", "ratio"]
+          },
+          "confirmed_by_user": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "mapping_version": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    }
+  }
+}
