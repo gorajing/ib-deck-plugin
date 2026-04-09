@@ -1,0 +1,25 @@
+Build a single financial summary slide for Addus HomeCare Corp (ADUS).
+
+Use these exact historical financials ($ in thousands):
+
+Metric                FY2023A      FY2024A      FY2025A      3Y CAGR
+Revenue               1,058,651    1,154,599    1,422,530    14.4%
+  % Growth            11.3%        9.1%         23.2%
+Gross Profit          339,876      375,021      461,874      16.6%
+  % Margin            32.1%        32.5%        32.5%
+EBITDA                105,082      116,221      155,027      21.4%
+  % Margin            9.9%         10.1%        10.9%
+Net Income            62,516       73,598       95,910       23.8%
+Diluted EPS           $3.83        $4.23        $5.22        16.7%
+
+Formatting requirements (standard IB conventions):
+- Action title: "Addus Has Delivered Consistent Revenue Growth with Expanding Profitability"
+- Section header: "Historical Financial Summary ($ in thousands)" in navy bar with white text
+- Right-align all numeric columns (so decimal points stack vertically)
+- Bold the subtotal rows: Revenue, Gross Profit, EBITDA, Net Income, Diluted EPS
+- Italic gray for the % Growth and % Margin rows
+- Highlight the EBITDA row with a light blue background
+- Source at the bottom: "Source: SEC EDGAR. ADUS FY2025 10-K filed February 24, 2026."
+- Slide number 6 in the footer
+
+Output: a single .pptx file with one slide.
