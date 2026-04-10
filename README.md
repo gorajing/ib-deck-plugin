@@ -2,15 +2,28 @@
 
 [![Tests](https://github.com/gorajing/ib-deck-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/gorajing/ib-deck-plugin/actions/workflows/tests.yml)
 
-> A Claude Code plugin with a 12-template investment banking slide library built on a renderer-first architecture: the LLM fills structured JSON specs and a deterministic Python renderer handles every pixel.
+> A Claude Code plugin with a 12-template investment banking slide library built on a renderer-first architecture, plus a proposal for a canonical JSON schema and audit contract for AI-generated finance slides.
 
 **The core idea:** separate content reasoning (LLM's strength) from spatial rendering (deterministic code's strength). The LLM never writes `Inches()`, `Pt()`, or EMU values. It picks a template and passes data. The renderer guarantees right-alignment, proportional chart bars, and collision-free label placement by construction.
 
-This plugin is an alternative architecture worth considering alongside [`anthropics/financial-services-plugins`](https://github.com/anthropics/financial-services-plugins). Different tradeoffs, smaller scope, tighter guarantees on the things it does cover.
+This repo serves two purposes:
+- an installable Claude Code plugin for deterministic slide rendering
+- a reviewable proposal for canonical slide-spec, provenance, exception, and audit primitives
+
+The plugin is an alternative architecture worth considering alongside [`anthropics/financial-services-plugins`](https://github.com/anthropics/financial-services-plugins). The proposal is the higher-level ask: are these primitives the right shape for Claude for Excel / PowerPoint to absorb internally, or are they the wrong shape?
 
 ## Status
 
-**Version 0.1.0 — early prototype.** What's shipped today is the 12-template rendering library and slash-command workflows that guide Claude through filling the JSON specs. It's installable and runnable. Extraction, full model building, and cross-model auditing are workflow guides (not automated pipelines) in this version — see [Roadmap](#roadmap) for what's coming.
+**Version 0.1.0 — early prototype.** What's shipped today is the 12-template rendering library and slash-command workflows that guide Claude through filling the JSON specs. It's installable and runnable. Extraction, model import, and auditing are proposed workflow primitives in this repo, not implemented end-to-end commands yet.
+
+## Start Here
+
+If you're reviewing this repo cold, use whichever entry point matches your depth:
+
+- [`comparison/`](comparison/) — empirical artifact: renderer-first vs prompt-guided slide generation on one fixed task
+- [`docs/v0.2-scope.md`](docs/v0.2-scope.md) — proposal: canonical schema, provenance, exceptions, and audit loop
+- [`docs/schemas/`](docs/schemas/) — formal JSON Schemas for the proposal
+- Everything below — the current installable plugin and 12-template renderer
 
 ## Installation
 
@@ -133,6 +146,21 @@ The tests use a [normalized PPTX hash](tests/normalize.py) that strips volatile 
 
 This is the evidence trail for the "fixed input, repeated renders, identical output" claim. If any of those tests fail, the architecture's core promise is broken.
 
+## Proposal Direction
+
+The current plugin is the reference implementation. The forward-looking proposal in
+[`docs/v0.2-scope.md`](docs/v0.2-scope.md) is narrower and more useful than "full
+autonomous deck generation":
+
+- a canonical core of 5 IB slide primitives
+- workbook provenance and import mapping
+- durable reviewed exceptions
+- machine-readable audit reports
+
+The goal is not "replace Claude for PowerPoint" or "mutate working decks in place."
+The goal is to propose a deterministic layer that can sit inside the existing
+analyst workflow: Excel -> canonical JSON spec -> standalone slide -> audit.
+
 ## What this architecture optimizes for
 
 **Repeatability.** Same input → same output. The renderer doesn't depend on what the LLM felt like typing in any particular run.
@@ -147,25 +175,15 @@ This is the evidence trail for the "fixed input, repeated renders, identical out
 
 Being honest about the scope of v0.1.0:
 
-- **No end-to-end SEC EDGAR extraction.** `/ib-extract` is a guided workflow that instructs Claude on the target JSON schema. A fully automated extraction command is on the roadmap.
-- **No Excel model generation.** The companion standalone repo includes DCF and LBO `xlsx` build scripts for the ADUS case study, but they're not wired into the plugin as commands yet.
-- **No cross-model audit command.** A programmatic 20-check audit exists in the companion repo for the ADUS case study. Making it a `/ib-audit` slash command is on the roadmap.
-- **No Office JS / in-PowerPoint support.** The renderer is python-pptx. It produces `.pptx` files from outside PowerPoint. An Office JS port would be needed for Cowork / in-PowerPoint use.
-- **Only 12 templates.** Real IB decks use ~25-30 patterns. See the [roadmap](#roadmap) for what's coming next.
+- **No end-to-end Excel import command.** `/ib-extract` is still a guided workflow; the proposed `import_config.json` / provenance flow lives in [`docs/v0.2-scope.md`](docs/v0.2-scope.md), not in shipped commands yet.
+- **No workbook-to-slide audit command.** The handshake files and `audit_report.json` contract are specified in [`docs/schemas/`](docs/schemas/), but `/ib-audit` is not implemented in this repo today.
+- **No mutation of working decks in place.** The renderer produces standalone `.pptx` output. That is intentional for the current workflow and proposal.
+- **No Office JS / in-PowerPoint implementation.** The renderer is python-pptx and runs out-of-app.
+- **Only 12 template types in the current plugin.** The canonical proposal focuses on a 5-template core; broader coverage remains future work.
 
-## Roadmap
-
-v0.2.0 goals:
-- Expand template library to 20+ (add precedent transactions, multi-chart dashboard, share price chart, debt schedule, value creation bridge, process timeline, buyer universe grid)
-- Automated `/ib-extract` that calls `edgartools` and produces the master JSON
-- Automated `/ib-dcf-model` and `/ib-lbo-model` using xlsxwriter
-- `/ib-audit` cross-model consistency check
-
-v0.3.0 goals:
-- Bank style variants (Moelis, Evercore, McKinsey presets)
-- MCP server wrapper so the renderer works in Claude Desktop and Cowork
-- Determinism test expansion to every template
-- GitHub Pages gallery
+Earlier roadmap notes have been superseded by the proposal in
+[`docs/v0.2-scope.md`](docs/v0.2-scope.md), which is the reviewable statement of
+direction for this repo.
 
 ## Companion repo
 
